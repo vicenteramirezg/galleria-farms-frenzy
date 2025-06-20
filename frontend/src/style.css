@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Game-specific styles */
+@layer base {
+  body {
+    @apply bg-leaf-green text-gray-800 font-game;
+  }
+}
+
+@layer components {
+  .game-container {
+    @apply bg-soil-brown border-4 border-leaf-green rounded-lg shadow-lg;
+  }
+  
+  .game-button {
+    @apply bg-flower-pink hover:bg-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .game-button:disabled {
+    @apply bg-gray-400 cursor-not-allowed;
+  }
+  
+  .score-display {
+    @apply bg-flower-yellow text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md;
+  }
+  
+  .leaderboard-item {
+    @apply bg-white bg-opacity-80 rounded-lg p-3 shadow-md flex justify-between items-center;
+  }
+} 
