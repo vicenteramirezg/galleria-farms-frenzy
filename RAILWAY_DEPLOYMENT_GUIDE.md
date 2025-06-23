@@ -33,9 +33,8 @@ galleria-farms-frenzy/
 
 1. **Login to Railway**: Go to [railway.app](https://railway.app) and sign in
 2. **Create New Project**: Click "New Project"
-3. **Deploy from GitHub**: Select "Deploy from GitHub repo"
-4. **Select Repository**: Choose your `galleria-farms-frenzy` repository
-5. **Configure Repository**: Railway will detect your project structure
+3. **Create Empty Project**: Click "Empty Project" (we'll add services manually)
+4. **Name Your Project**: Give it a name like "galleria-farms-frenzy"
 
 ### Step 3: Set Up Database Service
 
@@ -58,7 +57,9 @@ galleria-farms-frenzy/
    - Click "+ New Service"
    - Select "GitHub Repo"
    - Choose your repository
-   - Set **Root Directory**: `backend`
+   - **Connect Repository**: Railway will scan your repo
+   - **Select Service Path**: Choose `backend/` from the detected services
+   - Railway will use the `backend/railway.json` and `backend/nixpacks.toml` files
 
 2. **Configure Environment Variables**:
    Navigate to your backend service → Variables tab and add:
@@ -78,8 +79,10 @@ galleria-farms-frenzy/
 1. **Create Frontend Service**:
    - Click "+ New Service"  
    - Select "GitHub Repo"
-   - Choose your repository
-   - Set **Root Directory**: `frontend`
+   - Choose your repository (same repo as backend)
+   - **Connect Repository**: Railway will scan your repo again
+   - **Select Service Path**: Choose `frontend/` from the detected services
+   - Railway will use the `frontend/railway.json` and `frontend/nixpacks.toml` files
 
 2. **Configure Environment Variables**:
    Navigate to your frontend service → Variables tab and add:

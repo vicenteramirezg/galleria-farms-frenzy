@@ -4,7 +4,7 @@
 
 - [ ] All code committed and pushed to GitHub
 - [ ] Railway account created
-- [ ] Repository connected to Railway
+- [ ] Empty Railway project created
 
 ## Railway Services Setup ✅
 
@@ -13,7 +13,8 @@
 - [ ] Database is running and healthy
 
 ### 2. Backend Service (Django)
-- [ ] Service created with root directory: `backend`
+- [ ] Service created from GitHub repo
+- [ ] `backend/` path selected during service creation
 - [ ] Environment variables configured:
   - [ ] `SECRET_KEY` (generate a secure one)
   - [ ] `RAILWAY_ENVIRONMENT=production`
@@ -22,7 +23,8 @@
 - [ ] Service deployed successfully
 
 ### 3. Frontend Service (Vue.js)
-- [ ] Service created with root directory: `frontend`
+- [ ] Service created from GitHub repo
+- [ ] `frontend/` path selected during service creation
 - [ ] Environment variables configured:
   - [ ] `VITE_API_URL` (pointing to backend domain)
 - [ ] Domain generated and copied
