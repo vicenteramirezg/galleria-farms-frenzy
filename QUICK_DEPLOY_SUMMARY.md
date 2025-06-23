@@ -3,10 +3,11 @@
 ## 📁 Files Created for Deployment
 
 ✅ **Configuration Files:**
-- `backend/railway.json` - Backend Railway configuration
-- `backend/nixpacks.toml` - Backend build configuration  
-- `frontend/railway.json` - Frontend Railway configuration
-- `frontend/nixpacks.toml` - Frontend build configuration
+- `railway.json` - Railway project configuration
+- `nixpacks.toml` - Backend build configuration (root level)
+- `nixpacks-frontend.toml` - Frontend build configuration
+- `backend/nixpacks.toml` - Backend build configuration (in folder)
+- `frontend/nixpacks.toml` - Frontend build configuration (in folder)
 
 ✅ **Documentation:**
 - `RAILWAY_DEPLOYMENT_GUIDE.md` - Complete deployment guide
@@ -34,13 +35,13 @@ SECRET_KEY=#pw$Ns7%Yy^54qeWqm5yExk&!Eagwuwa31^_9mFb)CWAZ_za6A
 
 2. **Create Railway Project:**
    - Go to [railway.app](https://railway.app)
-   - New Project → Empty Project
-   - Name your project
+   - New Project → Deploy from GitHub repo
+   - Select your repository
 
-3. **Add 3 Services:**
+3. **Add Additional Services:**
+   - **Backend:** Auto-created (uses root `nixpacks.toml`)
    - **Database:** + New Service → Database → PostgreSQL
-   - **Backend:** + New Service → GitHub Repo → Select `backend/` path
-   - **Frontend:** + New Service → GitHub Repo → Select `frontend/` path
+   - **Frontend:** + New Service → GitHub Repo → Set Nixpacks Config: `nixpacks-frontend.toml`
 
 4. **Configure Environment Variables:**
    

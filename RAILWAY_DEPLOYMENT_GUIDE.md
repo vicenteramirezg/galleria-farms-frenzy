@@ -33,10 +33,16 @@ galleria-farms-frenzy/
 
 1. **Login to Railway**: Go to [railway.app](https://railway.app) and sign in
 2. **Create New Project**: Click "New Project"
-3. **Create Empty Project**: Click "Empty Project" (we'll add services manually)
-4. **Name Your Project**: Give it a name like "galleria-farms-frenzy"
+3. **Deploy from GitHub**: Select "Deploy from GitHub repo"
+4. **Select Repository**: Choose your `galleria-farms-frenzy` repository
 
-### Step 3: Set Up Database Service
+### Step 3: Configure Initial Deployment
+
+1. **First Service Created**: Railway will create your first service automatically
+   - This will be your **Backend Service** (Django API)
+   - Railway will use the root `nixpacks.toml` (configured for backend)
+
+### Step 4: Add Database Service
 
 1. **Add Database**: In your Railway project dashboard
    - Click "+ New Service"
@@ -51,17 +57,9 @@ galleria-farms-frenzy/
    - `PGUSER`
    - `PGPASSWORD`
 
-### Step 4: Deploy Backend (Django API)
+### Step 5: Configure Backend Service
 
-1. **Create Backend Service**:
-   - Click "+ New Service"
-   - Select "GitHub Repo"
-   - Choose your repository
-   - **Connect Repository**: Railway will scan your repo
-   - **Select Service Path**: Choose `backend/` from the detected services
-   - Railway will use the `backend/railway.json` and `backend/nixpacks.toml` files
-
-2. **Configure Environment Variables**:
+1. **Configure Environment Variables**:
    Navigate to your backend service → Variables tab and add:
    ```
    SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
@@ -69,20 +67,20 @@ galleria-farms-frenzy/
    ALLOWED_HOSTS=your-backend-domain.railway.app
    ```
 
-3. **Get Backend Domain**:
+2. **Get Backend Domain**:
    - Go to Settings → Networking
    - Click "Generate Domain"
    - Copy the generated domain (e.g., `your-backend-domain.railway.app`)
 
-### Step 5: Deploy Frontend (Vue.js App)
+### Step 6: Deploy Frontend (Vue.js App)
 
 1. **Create Frontend Service**:
    - Click "+ New Service"  
    - Select "GitHub Repo"
    - Choose your repository (same repo as backend)
-   - **Connect Repository**: Railway will scan your repo again
-   - **Select Service Path**: Choose `frontend/` from the detected services
-   - Railway will use the `frontend/railway.json` and `frontend/nixpacks.toml` files
+   - **IMPORTANT**: In the service settings, you need to:
+     - Go to Settings → Build
+     - Set **Nixpacks Config File**: `nixpacks-frontend.toml`
 
 2. **Configure Environment Variables**:
    Navigate to your frontend service → Variables tab and add:
@@ -96,7 +94,7 @@ galleria-farms-frenzy/
    - Click "Generate Domain"
    - Copy the generated domain (e.g., `your-frontend-domain.railway.app`)
 
-### Step 6: Update Backend CORS Settings
+### Step 7: Update Backend CORS Settings
 
 1. **Update Backend Environment Variables**:
    Add your frontend domain to the backend service variables:
@@ -106,7 +104,7 @@ galleria-farms-frenzy/
 
 2. **Redeploy Backend**: The backend will automatically redeploy and update CORS settings
 
-### Step 7: Verify Deployment
+### Step 8: Verify Deployment
 
 1. **Check All Services**: Ensure all three services are running:
    - ✅ PostgreSQL Database
