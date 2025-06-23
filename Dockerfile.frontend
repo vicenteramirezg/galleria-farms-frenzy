@@ -2,27 +2,23 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy frontend package files
-COPY frontend/package*.json ./frontend/
+# Copy frontend package files first
+COPY frontend/package*.json ./
 
-# Install dependencies
-WORKDIR /app/frontend
-RUN npm ci
+# Install dependencies (including serve)
+RUN npm install
 
-# Copy the entire project (needed for potential cross-references)
-COPY . /app/
+# Copy the entire project
+COPY . .
 
-# Ensure we're in the frontend directory
+# Set working directory to frontend
 WORKDIR /app/frontend
 
 # Build the application
 RUN npm run build-only
 
-# Install serve globally
-RUN npm install -g serve
-
 # Expose port
 EXPOSE 3000
 
-# Start the application
-CMD sh -c "serve -s dist -p $PORT" 
+# Start the application using npx serve (no global install needed)
+CMD sh -c "npx serve -s dist -p $PORT" 
