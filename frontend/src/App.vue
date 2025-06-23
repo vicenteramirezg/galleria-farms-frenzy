@@ -107,7 +107,7 @@ const showGame = () => {
         </main>
 
         <!-- Bottom Navigation -->
-        <footer class="text-center py-4 md:py-8">
+        <div class="text-center py-4 md:py-8">
           <div class="animate-fade-in-up">
             <button 
               @click="showLeaderboard"
@@ -117,7 +117,7 @@ const showGame = () => {
               View Leaderboard
             </button>
           </div>
-        </footer>
+        </div>
       </div>
 
       <!-- Leaderboard View -->
@@ -147,7 +147,7 @@ const showGame = () => {
         </main>
 
         <!-- Back to Game Button -->
-        <footer class="text-center py-4 md:py-8">
+        <div class="text-center py-4 md:py-8">
           <div class="animate-fade-in-up">
             <button 
               @click="showGame"
@@ -157,8 +157,23 @@ const showGame = () => {
               Back to Game
             </button>
           </div>
-        </footer>
+        </div>
       </div>
+
+      <!-- Footer with Logo -->
+      <footer class="mt-8 py-6 md:py-8 text-center border-t border-white/10">
+        <div class="flex flex-col items-center space-y-4 animate-fade-in-up">
+          <img 
+            src="/logo_white.png" 
+            alt="Galleria Farms Logo" 
+            class="h-12 md:h-16 opacity-80 hover:opacity-100 transition-opacity duration-300"
+          >
+          <div class="text-white/60 text-sm">
+            <p>© 2025 Galleria Farms. All rights reserved.</p>
+            <p class="text-xs mt-1">Celebrating 25 Years of Excellence</p>
+          </div>
+        </div>
+      </footer>
     </div>
 
     <!-- Enhanced Connection Status -->

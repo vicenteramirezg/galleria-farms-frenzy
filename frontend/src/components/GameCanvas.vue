@@ -3,33 +3,94 @@
     <!-- Game Instructions - moved to top -->
     <div class="instructions-container animate-fade-in-up mb-6">
       <h3 class="instructions-title">How to Play</h3>
-      <div class="score-guide">
-        <div class="score-item">
-          <span class="icon">🌸</span>
-          <span class="points positive">+10</span>
-        </div>
-        <div class="score-item">
-          <span class="icon">🌻</span>
-          <span class="points positive">+15</span>
-        </div>
-        <div class="score-item">
-          <span class="icon">🌺</span>
-          <span class="points positive">+20</span>
-        </div>
-        <div class="score-item">
-          <span class="icon">🐛</span>
-          <span class="points negative">-5</span>
+      
+      <!-- Regular Items -->
+      <div class="mb-4">
+        <h4 class="text-white font-semibold mb-2 text-sm">Regular Items</h4>
+        <div class="score-guide">
+          <div class="score-item">
+            <span class="icon">🌸</span>
+            <span class="points positive">+10</span>
+          </div>
+          <div class="score-item">
+            <span class="icon">🌻</span>
+            <span class="points positive">+15</span>
+          </div>
+          <div class="score-item">
+            <span class="icon">🌺</span>
+            <span class="points positive">+20</span>
+          </div>
+          <div class="score-item">
+            <span class="icon">🐛</span>
+            <span class="points negative">-5</span>
+          </div>
         </div>
       </div>
+
+      <!-- Special Challenge Items -->
+      <div class="mb-4">
+        <h4 class="text-white font-semibold mb-2 text-sm">Special Challenge Items</h4>
+        <div class="score-guide special-items">
+          <div class="score-item">
+            <span class="icon">🦋</span>
+            <span class="points special">+50</span>
+            <span class="description">Moves around!</span>
+          </div>
+          <div class="score-item">
+            <span class="icon">🌿</span>
+            <span class="points positive">+25</span>
+            <span class="description">Spreads if ignored</span>
+          </div>
+          <div class="score-item">
+            <span class="icon">🌟</span>
+            <span class="points legendary">+100</span>
+            <span class="description">Rare & fast!</span>
+          </div>
+          <div class="score-item">
+            <span class="icon">💣</span>
+            <span class="points bomb">-10</span>
+            <span class="description">Click fast or explodes!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Combo System -->
+      <div class="mb-4 p-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-400/30">
+        <h4 class="text-white font-semibold mb-2 text-sm flex items-center">
+          <span class="mr-2">🔥</span>Combo System
+        </h4>
+        <div class="text-xs text-white/80 space-y-1">
+          <div>• Chain good clicks for bonus points!</div>
+          <div>• 3+ combo: <span class="text-yellow-300">1.5x points</span></div>
+          <div>• 6+ combo: <span class="text-yellow-300">2x points</span></div>
+          <div>• 10+ combo: <span class="text-yellow-300">2.5x points</span></div>
+          <div>• 15+ combo: <span class="text-yellow-300">3x points</span></div>
+          <div class="text-red-300">⚠️ Bad clicks reset your combo!</div>
+        </div>
+      </div>
+
       <p class="instructions-text">
-        Celebrate Galleria Farms' 25th anniversary! Collect flowers, avoid caterpillars!
+        Celebrate Galleria Farms' 25th anniversary! Collect flowers, build combos, and master the special challenges! 
+        <span class="block mt-2 text-yellow-300 text-xs">💡 Game gets progressively harder every 10 seconds!</span>
       </p>
+
+      <!-- Let's Play Button -->
+      <div class="mt-4 text-center">
+        <button 
+          @click="scrollToGame"
+          class="btn-accent text-base px-6 py-3"
+        >
+          <span class="mr-2">🚀</span>
+          Let's Play!
+        </button>
+      </div>
+      
       <div v-if="!showDifficultySelection && selectedDifficulty !== 'normal'" class="mt-4 p-3 bg-white/10 rounded-lg">
         <div class="text-sm text-white/80">
           <div class="font-semibold mb-1 capitalize">{{ selectedDifficulty }} Mode Active</div>
           <div class="text-xs">
-            <span v-if="selectedDifficulty === 'easy'">🌱 Longer flower times, fewer caterpillars</span>
-            <span v-else-if="selectedDifficulty === 'hard'">🔥 Faster gameplay, more caterpillars</span>
+            <span v-if="selectedDifficulty === 'easy'">🌱 Gentle progression, 15% special items</span>
+            <span v-else-if="selectedDifficulty === 'hard'">🔥 Aggressive scaling, 25% special items</span>
           </div>
         </div>
       </div>
@@ -309,15 +370,17 @@ const checkMobile = () => {
 
 const updateGameDimensions = () => {
   if (isMobile.value) {
-    // For mobile, use most of the screen width but maintain aspect ratio
+    // For mobile, use a portrait aspect ratio that fits phone screens better
     const screenWidth = window.innerWidth - 32 // Account for padding
-    const aspectRatio = 4/3 // 800/600 = 4/3
-    gameWidth.value = Math.min(screenWidth, 600) // Max width of 600 on mobile
-    gameHeight.value = Math.round(gameWidth.value / aspectRatio)
+    const screenHeight = window.innerHeight - 200 // Account for UI elements
+    const aspectRatio = 3/4 // Portrait ratio (3:4) instead of landscape
+    
+    gameWidth.value = Math.min(screenWidth, 450) // Max width of 450 on mobile
+    gameHeight.value = Math.min(Math.round(gameWidth.value / aspectRatio), screenHeight)
   } else {
-    // Desktop dimensions
-    gameWidth.value = 800
-    gameHeight.value = 600
+    // Desktop dimensions - slightly more portrait oriented
+    gameWidth.value = 600 // Reduced width
+    gameHeight.value = 700 // Increased height
   }
 }
 
@@ -562,6 +625,16 @@ const formatInitials = (event: Event) => {
   target.value = target.value.replace(/[^A-Za-z]/g, '').toUpperCase()
   playerInitials.value = target.value
 }
+
+// Scroll to game canvas
+const scrollToGame = () => {
+  if (gameContainer.value) {
+    gameContainer.value.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'center'
+    })
+  }
+}
 </script>
 
 <style scoped>
@@ -610,10 +683,10 @@ const formatInitials = (event: Event) => {
 .game-canvas {
   @apply w-full mx-auto rounded-xl overflow-hidden bg-gradient-to-br from-green-600 to-green-700 shadow-inner;
   position: relative;
-  /* Use aspect ratio to maintain proportions */
-  aspect-ratio: 4/3;
-  max-width: 800px;
-  max-height: 600px;
+  /* Use portrait aspect ratio to better fit mobile screens */
+  aspect-ratio: 3/4;
+  max-width: 600px;
+  max-height: 800px;
 }
 
 /* Ensure Phaser canvas is contained */
@@ -638,7 +711,7 @@ const formatInitials = (event: Event) => {
 
 /* Instructions */
 .instructions-container {
-  @apply bg-white/10 backdrop-blur-sm rounded-xl p-6 max-w-lg mx-auto border border-white/20;
+  @apply bg-white/10 backdrop-blur-sm rounded-xl p-6 max-w-4xl mx-auto border border-white/20;
 }
 
 .instructions-title {
@@ -667,6 +740,22 @@ const formatInitials = (event: Event) => {
 
 .score-item .points.negative {
   @apply text-red-300;
+}
+
+.score-item .points.special {
+  @apply text-blue-300;
+}
+
+.score-item .points.legendary {
+  @apply text-yellow-300 font-bold;
+}
+
+.score-item .points.bomb {
+  @apply text-red-400 font-bold;
+}
+
+.score-item .description {
+  @apply text-xs text-white/60 ml-1;
 }
 
 .instructions-text {
@@ -711,9 +800,11 @@ const formatInitials = (event: Event) => {
   }
   
   .game-canvas {
-    /* On mobile, use more of the screen width */
+    /* On mobile, optimize for portrait orientation */
     width: 100%;
     max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 300px); /* Leave room for UI elements */
+    aspect-ratio: 3/4; /* Maintain portrait ratio */
   }
   
   .stat-card {
@@ -732,6 +823,7 @@ const formatInitials = (event: Event) => {
 @media (max-width: 480px) {
   .game-canvas {
     max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 250px); /* Adjusted for smaller screens */
   }
   
   .game-stats-container {
@@ -751,7 +843,15 @@ const formatInitials = (event: Event) => {
   }
   
   .score-guide {
-    @apply gap-2;
+    @apply gap-2 flex-wrap;
+  }
+  
+  .score-guide.special-items {
+    @apply grid grid-cols-2 gap-2;
+  }
+  
+  .score-item {
+    @apply flex-col text-center;
   }
   
   .score-item .icon {
@@ -760,6 +860,10 @@ const formatInitials = (event: Event) => {
   
   .score-item .points {
     @apply text-sm;
+  }
+  
+  .score-item .description {
+    @apply text-xs leading-tight;
   }
 }
 

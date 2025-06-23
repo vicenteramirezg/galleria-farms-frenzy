@@ -15,6 +15,12 @@ export class PreloadScene extends Phaser.Scene {
     this.createEmojiSprite('flower3', '🌺') // Hibiscus - 20 points
     this.createEmojiSprite('thorn', '🐛')   // Caterpillar - negative points
     
+    // Special challenge items
+    this.createEmojiSprite('butterfly', '🦋') // Moving target - 50 points
+    this.createEmojiSprite('weed', '🌿')      // Spreads if not clicked - 25 points
+    this.createEmojiSprite('golden', '🌟')    // Rare golden flower - 100 points
+    this.createEmojiSprite('bomb', '💣')      // Bomb flower - must click quickly
+    
     // Create grid cell sprite (light brown rectangle)
     this.createGridCellSprite()
     
