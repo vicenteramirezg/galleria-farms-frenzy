@@ -6,14 +6,14 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
-    // Create simple colored rectangles as placeholders for flowers and weeds
+    // Create simple colored rectangles as placeholders for flowers and thorns
     this.load.image('background', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==')
     
-    // Create flower sprite (pink circle)
-    this.createFlowerSprite()
-    
-    // Create weed sprite (dark green square)
-    this.createWeedSprite()
+    // Create emoji-based sprites to match the GameCanvas component
+    this.createEmojiSprite('flower1', '🌸') // Cherry Blossom - 10 points
+    this.createEmojiSprite('flower2', '🌻') // Sunflower - 15 points
+    this.createEmojiSprite('flower3', '🌺') // Hibiscus - 20 points
+    this.createEmojiSprite('thorn', '🐛')   // Caterpillar - negative points
     
     // Create grid cell sprite (light brown rectangle)
     this.createGridCellSprite()
@@ -50,24 +50,25 @@ export class PreloadScene extends Phaser.Scene {
     })
   }
 
-  private createFlowerSprite() {
-    const graphics = this.add.graphics()
-    graphics.fillStyle(0xFF69B4) // Hot pink
-    graphics.fillCircle(25, 25, 20)
-    graphics.fillStyle(0xFFD700) // Gold center
-    graphics.fillCircle(25, 25, 8)
-    graphics.generateTexture('flower', 50, 50)
-    graphics.destroy()
-  }
-
-  private createWeedSprite() {
-    const graphics = this.add.graphics()
-    graphics.fillStyle(0x2F4F2F) // Dark green
-    graphics.fillRect(10, 10, 30, 30)
-    graphics.fillStyle(0x228B22) // Lighter green accent
-    graphics.fillRect(15, 15, 20, 20)
-    graphics.generateTexture('weed', 50, 50)
-    graphics.destroy()
+  private createEmojiSprite(key: string, emoji: string) {
+    // Create a canvas to render the emoji
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    if (!ctx) return
+    
+    // Set canvas size
+    canvas.width = 80
+    canvas.height = 80
+    
+    // Set font and draw emoji
+    ctx.font = '60px Arial'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(emoji, 40, 40)
+    
+    // Convert canvas to texture
+    this.load.image(key, canvas.toDataURL())
   }
 
   private createGridCellSprite() {

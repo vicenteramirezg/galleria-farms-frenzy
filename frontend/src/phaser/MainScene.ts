@@ -2,9 +2,48 @@ import Phaser from 'phaser'
 
 interface GameItem {
   sprite: Phaser.GameObjects.Sprite
-  type: 'flower' | 'weed'
+  type: 'flower1' | 'flower2' | 'flower3' | 'thorn'
   row: number
   col: number
+  points: number
+}
+
+// Add difficulty interface
+export interface DifficultySettings {
+  spawnDelayMin: number
+  spawnDelayMax: number
+  itemLifetimeMin: number
+  itemLifetimeMax: number
+  caterpillarRatio: number
+  gameTime: number
+}
+
+// Define difficulty presets
+export const DIFFICULTY_PRESETS: Record<string, DifficultySettings> = {
+  easy: {
+    spawnDelayMin: 1000,
+    spawnDelayMax: 2000,
+    itemLifetimeMin: 3000,
+    itemLifetimeMax: 4500,
+    caterpillarRatio: 0.25, // 25% caterpillars
+    gameTime: 60
+  },
+  normal: {
+    spawnDelayMin: 500,
+    spawnDelayMax: 1000,
+    itemLifetimeMin: 1500,
+    itemLifetimeMax: 2500,
+    caterpillarRatio: 0.35, // 35% caterpillars
+    gameTime: 60
+  },
+  hard: {
+    spawnDelayMin: 300,
+    spawnDelayMax: 700,
+    itemLifetimeMin: 1000,
+    itemLifetimeMax: 1800,
+    caterpillarRatio: 0.45, // 45% caterpillars
+    gameTime: 60
+  }
 }
 
 export class MainScene extends Phaser.Scene {
@@ -16,9 +55,15 @@ export class MainScene extends Phaser.Scene {
   private cellSize = 80
   private spawnTimer?: Phaser.Time.TimerEvent
   private gameTimer?: Phaser.Time.TimerEvent
-  private scoreText?: Phaser.GameObjects.Text
-  private timerText?: Phaser.GameObjects.Text
   private gameStarted = false
+
+  // Difficulty settings
+  private difficulty: DifficultySettings = DIFFICULTY_PRESETS.normal
+
+  // Responsive properties
+  private gameWidth = 800
+  private gameHeight = 600
+  private isMobile = false
 
   // Game callbacks to communicate with Vue
   private onScoreUpdate?: (score: number) => void
@@ -30,6 +75,17 @@ export class MainScene extends Phaser.Scene {
   }
 
   create() {
+    // Get actual game dimensions
+    this.gameWidth = this.cameras.main.width
+    this.gameHeight = this.cameras.main.height
+    this.isMobile = this.gameWidth <= 600
+
+    // Calculate responsive grid and cell sizes
+    this.calculateResponsiveDimensions()
+
+    // Set white background
+    this.cameras.main.setBackgroundColor('#FFFFFF')
+    
     // Set up the game grid background
     this.createGrid()
     
@@ -42,13 +98,46 @@ export class MainScene extends Phaser.Scene {
     // Set up input
     this.input.on('pointerdown', this.handleClick, this)
     
-    // Start the game
-    this.startGame()
+    // Don't start the game automatically - wait for user to click start
+  }
+
+  private calculateResponsiveDimensions() {
+    // Adjust grid size and cell size based on screen dimensions
+    if (this.isMobile) {
+      // For mobile, use a smaller grid to ensure good visibility
+      this.gridSize = { rows: 5, cols: 6 }
+      
+      // Calculate cell size to fit the screen with some padding
+      const availableWidth = this.gameWidth * 0.9 // 90% of width
+      const availableHeight = this.gameHeight * 0.7 // 70% of height (leave room for UI)
+      
+      const cellSizeByWidth = Math.floor(availableWidth / this.gridSize.cols)
+      const cellSizeByHeight = Math.floor(availableHeight / this.gridSize.rows)
+      
+      this.cellSize = Math.min(cellSizeByWidth, cellSizeByHeight, 70) // Max 70px on mobile
+    } else {
+      // Desktop dimensions
+      this.gridSize = { rows: 6, cols: 8 }
+      this.cellSize = 80
+      
+      // Ensure it fits on smaller desktop screens too
+      const availableWidth = this.gameWidth * 0.9
+      const availableHeight = this.gameHeight * 0.8
+      
+      const cellSizeByWidth = Math.floor(availableWidth / this.gridSize.cols)
+      const cellSizeByHeight = Math.floor(availableHeight / this.gridSize.rows)
+      
+      this.cellSize = Math.min(cellSizeByWidth, cellSizeByHeight, 80)
+    }
+
+    console.log(`Responsive dimensions: ${this.gameWidth}x${this.gameHeight}, Mobile: ${this.isMobile}, Grid: ${this.gridSize.rows}x${this.gridSize.cols}, Cell: ${this.cellSize}`)
   }
 
   private createGrid() {
-    const startX = (this.cameras.main.width - (this.gridSize.cols * this.cellSize)) / 2
-    const startY = 100
+    const totalGridWidth = this.gridSize.cols * this.cellSize
+    const totalGridHeight = this.gridSize.rows * this.cellSize
+    const startX = (this.gameWidth - totalGridWidth) / 2
+    const startY = (this.gameHeight - totalGridHeight) / 2
     
     for (let row = 0; row < this.gridSize.rows; row++) {
       for (let col = 0; col < this.gridSize.cols; col++) {
@@ -58,42 +147,19 @@ export class MainScene extends Phaser.Scene {
         const cell = this.add.sprite(x, y, 'gridCell')
         cell.setOrigin(0, 0)
         cell.setAlpha(0.5)
+        
+        // Scale the grid cell to match our calculated cell size
+        const scaleX = this.cellSize / cell.width
+        const scaleY = this.cellSize / cell.height
+        cell.setScale(scaleX, scaleY)
       }
     }
   }
 
   private createUI() {
-    // Score display
-    this.scoreText = this.add.text(20, 20, 'Score: 0', {
-      fontSize: '24px',
-      color: '#FFD700',
-      fontFamily: 'Courier New',
-      backgroundColor: '#000000',
-      padding: { x: 10, y: 5 }
-    })
-
-    // Timer display
-    this.timerText = this.add.text(this.cameras.main.width - 20, 20, 'Time: 60s', {
-      fontSize: '24px',
-      color: '#FFD700',
-      fontFamily: 'Courier New',
-      backgroundColor: '#000000',
-      padding: { x: 10, y: 5 }
-    }).setOrigin(1, 0)
-
-    // Instructions
-    this.add.text(
-      this.cameras.main.centerX,
-      this.cameras.main.height - 50,
-      'Click flowers to gain points! Avoid weeds!',
-      {
-        fontSize: '18px',
-        color: '#FFFFFF',
-        fontFamily: 'Courier New',
-        backgroundColor: '#000000',
-        padding: { x: 10, y: 5 }
-      }
-    ).setOrigin(0.5)
+    // Remove in-game UI since it's handled by Vue component
+    // We only keep references for the internal score/timer tracking
+    // but don't display them in the game canvas
   }
 
   private initializeGrid() {
@@ -103,23 +169,25 @@ export class MainScene extends Phaser.Scene {
   }
 
   private startGame() {
-    if (this.gameStarted) return
+    console.log('MainScene.startGame() called, gameStarted:', this.gameStarted, 'gameActive:', this.gameActive)
+    
+    if (this.gameStarted && this.gameActive) {
+      console.log('Game already started and active, returning')
+      return
+    }
     
     this.gameStarted = true
     this.gameActive = true
     this.score = 0
-    this.timeLeft = 60
+    this.timeLeft = this.difficulty.gameTime
+    
+    console.log('Starting game timers and spawning with difficulty:', this.difficulty)
     
     this.updateScore()
     this.updateTimer()
     
-    // Spawn items every 1-2 seconds
-    this.spawnTimer = this.time.addEvent({
-      delay: Phaser.Math.Between(1000, 2000),
-      callback: this.spawnItem,
-      callbackScope: this,
-      loop: true
-    })
+    // Spawn items based on difficulty settings
+    this.scheduleNextSpawn()
     
     // Game timer (count down)
     this.gameTimer = this.time.addEvent({
@@ -127,6 +195,18 @@ export class MainScene extends Phaser.Scene {
       callback: this.updateGameTimer,
       callbackScope: this,
       loop: true
+    })
+    
+    console.log('Game started successfully')
+  }
+
+  private scheduleNextSpawn() {
+    if (!this.gameActive) return
+    
+    const delay = Phaser.Math.Between(this.difficulty.spawnDelayMin, this.difficulty.spawnDelayMax)
+    this.spawnTimer = this.time.delayedCall(delay, () => {
+      this.spawnItem()
+      this.scheduleNextSpawn() // Schedule the next spawn
     })
   }
 
@@ -148,41 +228,83 @@ export class MainScene extends Phaser.Scene {
     // Pick random empty cell
     const randomCell = Phaser.Utils.Array.GetRandom(emptyCells)
     
-    // 80% chance for flower, 20% chance for weed
-    const isFlower = Math.random() < 0.8
-    const spriteKey = isFlower ? 'flower' : 'weed'
+    // Flower vs caterpillar chance based on difficulty
+    const isFlower = Math.random() > this.difficulty.caterpillarRatio
+    let spriteKey: 'flower1' | 'flower2' | 'flower3' | 'thorn'
+    let points: number
+    
+    if (isFlower) {
+      // Random flower type
+      const flowerType = Math.random()
+      if (flowerType < 0.5) {
+        spriteKey = 'flower1' // 50% chance - common (🌸)
+        points = 10
+      } else if (flowerType < 0.8) {
+        spriteKey = 'flower2' // 30% chance - uncommon (🌻)
+        points = 15
+      } else {
+        spriteKey = 'flower3' // 20% chance - rare (🌺)
+        points = 20
+      }
+    } else {
+      spriteKey = 'thorn' // Actually caterpillar (🐛)
+      points = -5
+    }
     
     // Calculate position
-    const startX = (this.cameras.main.width - (this.gridSize.cols * this.cellSize)) / 2
-    const startY = 100
+    const totalGridWidth = this.gridSize.cols * this.cellSize
+    const totalGridHeight = this.gridSize.rows * this.cellSize
+    const startX = (this.gameWidth - totalGridWidth) / 2
+    const startY = (this.gameHeight - totalGridHeight) / 2
     const x = startX + randomCell.col * this.cellSize + this.cellSize / 2
     const y = startY + randomCell.row * this.cellSize + this.cellSize / 2
     
     // Create sprite
     const sprite = this.add.sprite(x, y, spriteKey)
     sprite.setInteractive()
-    sprite.setScale(0.8)
+    
+    // Responsive scaling for different items
+    let baseScale = this.isMobile ? 0.6 : 0.8
+    let scale = baseScale
+    if (spriteKey === 'flower2') scale = baseScale * 1.125 // 0.9 desktop, 0.675 mobile
+    if (spriteKey === 'flower3') scale = baseScale * 1.25  // 1.0 desktop, 0.75 mobile
+    if (spriteKey === 'thorn') scale = baseScale * 0.875   // 0.7 desktop, 0.525 mobile (caterpillar)
+    
+    sprite.setScale(scale)
     
     // Add to grid
     const gameItem: GameItem = {
       sprite,
-      type: isFlower ? 'flower' : 'weed',
+      type: spriteKey,
       row: randomCell.row,
-      col: randomCell.col
+      col: randomCell.col,
+      points
     }
     
     this.grid[randomCell.row][randomCell.col] = gameItem
     
-    // Auto-remove after 3-5 seconds if not clicked
-    this.time.delayedCall(Phaser.Math.Between(3000, 5000), () => {
+    // Auto-remove timing based on difficulty (with mobile adjustment)
+    let minLifetime = this.difficulty.itemLifetimeMin
+    let maxLifetime = this.difficulty.itemLifetimeMax
+    
+    // Slightly longer on mobile for easier tapping
+    if (this.isMobile) {
+      minLifetime = Math.round(minLifetime * 1.3)
+      maxLifetime = Math.round(maxLifetime * 1.3)
+    }
+    
+    const removeDelay = Phaser.Math.Between(minLifetime, maxLifetime)
+    
+    this.time.delayedCall(removeDelay, () => {
       this.removeItem(gameItem)
     })
     
     // Add spawn animation
+    const targetScale = sprite.scale
     sprite.setScale(0)
     this.tweens.add({
       targets: sprite,
-      scale: 0.8,
+      scale: targetScale,
       duration: 300,
       ease: 'Back.easeOut'
     })
@@ -210,12 +332,14 @@ export class MainScene extends Phaser.Scene {
   }
 
   private clickItem(item: GameItem) {
-    if (item.type === 'flower') {
-      this.score += 10
-      this.createFloatingText(item.sprite.x, item.sprite.y, '+10', '#00FF00')
+    if (item.type !== 'thorn') {
+      // It's a flower
+      this.score += item.points
+      this.createFloatingText(item.sprite.x, item.sprite.y, `+${item.points}`, '#00FF00')
     } else {
-      this.score = Math.max(0, this.score - 5)
-      this.createFloatingText(item.sprite.x, item.sprite.y, '-5', '#FF0000')
+      // It's a caterpillar
+      this.score = Math.max(0, this.score + item.points)
+      this.createFloatingText(item.sprite.x, item.sprite.y, `${item.points}`, '#FF0000')
     }
     
     this.updateScore()
@@ -271,16 +395,10 @@ export class MainScene extends Phaser.Scene {
   }
 
   private updateScore() {
-    if (this.scoreText) {
-      this.scoreText.setText(`Score: ${this.score}`)
-    }
     this.onScoreUpdate?.(this.score)
   }
 
   private updateTimer() {
-    if (this.timerText) {
-      this.timerText.setText(`Time: ${this.timeLeft}s`)
-    }
     this.onTimeUpdate?.(this.timeLeft)
   }
 
@@ -304,22 +422,7 @@ export class MainScene extends Phaser.Scene {
       }
     }
     
-    // Show game over text
-    this.add.text(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      `Game Over!\nFinal Score: ${this.score}`,
-      {
-        fontSize: '32px',
-        color: '#FFD700',
-        fontFamily: 'Courier New',
-        backgroundColor: '#000000',
-        padding: { x: 20, y: 10 },
-        align: 'center'
-      }
-    ).setOrigin(0.5)
-    
-    // Notify Vue component
+    // Notify Vue component (game over UI is handled by Vue)
     this.onGameEnd?.(this.score)
   }
 
@@ -336,8 +439,39 @@ export class MainScene extends Phaser.Scene {
     this.onGameEnd = callback
   }
 
+  // Method to start game (called from Vue component)
+  public beginGame() {
+    this.startGame()
+  }
+
+  // Method to set difficulty
+  public setDifficulty(difficultyKey: string) {
+    if (DIFFICULTY_PRESETS[difficultyKey]) {
+      this.difficulty = DIFFICULTY_PRESETS[difficultyKey]
+      console.log('Difficulty set to:', difficultyKey, this.difficulty)
+    }
+  }
+
   // Method to restart game
   public restartGame() {
+    console.log('Restarting MainScene')
+    
+    // Reset game state before restarting scene
+    this.gameStarted = false
+    this.gameActive = false
+    this.score = 0
+    this.timeLeft = this.difficulty.gameTime
+    
+    // Clear any existing timers
+    if (this.spawnTimer) {
+      this.spawnTimer.destroy()
+      this.spawnTimer = undefined
+    }
+    if (this.gameTimer) {
+      this.gameTimer.destroy()
+      this.gameTimer = undefined
+    }
+    
     this.scene.restart()
   }
 } 

@@ -9,11 +9,17 @@ const currentView = ref<'game' | 'leaderboard'>('game')
 const connectionStatus = ref<'online' | 'offline'>('offline')
 const showConnectionStatus = ref(false)
 const leaderboardRef = ref<InstanceType<typeof Leaderboard>>()
+const isLoaded = ref(false)
 
 onMounted(() => {
   checkConnection()
   // Check connection every 30 seconds
   setInterval(checkConnection, 30000)
+  
+  // Add a small delay for smooth entrance animation
+  setTimeout(() => {
+    isLoaded.value = true
+  }, 100)
 })
 
 const checkConnection = async () => {
@@ -54,139 +60,241 @@ const showGame = () => {
 </script>
 
 <template>
-  <div id="app" class="min-h-screen bg-gradient-to-b from-leaf-green to-green-800">
-    <!-- Header -->
-    <header class="bg-black bg-opacity-30 text-white py-4 px-6">
-      <div class="max-w-6xl mx-auto flex justify-between items-center">
-        <div class="flex items-center space-x-3">
-          <span class="text-3xl">🌸</span>
-          <h1 class="text-2xl font-bold">Flower Farm Frenzy</h1>
-        </div>
-        
-        <nav class="space-x-4">
-          <button 
-            @click="currentView = 'game'"
-            :class="['px-4 py-2 rounded-lg transition-colors', 
-                     currentView === 'game' ? 'bg-flower-pink text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30']"
-          >
-            🎮 Play
-          </button>
-          <button 
-            @click="currentView = 'leaderboard'"
-            :class="['px-4 py-2 rounded-lg transition-colors',
-                     currentView === 'leaderboard' ? 'bg-flower-pink text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30']"
-          >
-            🏆 Leaderboard
-          </button>
-        </nav>
-      </div>
-    </header>
+  <div id="app" class="min-h-screen w-full" style="background: #211f20;">
+    <!-- Animated background elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-10 left-10 text-4xl animate-float opacity-20">🌸</div>
+      <div class="absolute top-32 right-20 text-3xl animate-bounce-subtle opacity-20" style="animation-delay: 0.5s">🌻</div>
+      <div class="absolute bottom-20 left-32 text-3xl animate-float opacity-20" style="animation-delay: 1s">🌺</div>
+      <div class="absolute bottom-32 right-10 text-4xl animate-bounce-subtle opacity-20" style="animation-delay: 1.5s">🌷</div>
+      <div class="absolute top-1/2 left-1/4 text-2xl animate-wiggle opacity-10" style="animation-delay: 2s">🍀</div>
+      <div class="absolute top-1/3 right-1/3 text-2xl animate-float opacity-10" style="animation-delay: 2.5s">🌱</div>
+    </div>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
+    <!-- Main Container -->
+    <div class="relative z-10 min-h-screen" :class="{ 'animate-fade-in-up': isLoaded }">
+      
       <!-- Game View -->
-      <div v-if="currentView === 'game'" class="game-view">
-        <div class="text-center mb-8">
-          <h2 class="text-3xl font-bold text-white mb-2">Ready to Farm?</h2>
-          <p class="text-white opacity-80 text-lg">
-            Click the flowers to score points, but watch out for weeds! You have 60 seconds!
-          </p>
-        </div>
-        
-        <GameCanvas 
-          @game-end="handleGameEnd"
-          @show-leaderboard="showLeaderboard"
-        />
+      <div v-if="currentView === 'game'" class="min-h-screen flex flex-col">
+        <!-- Header with Title -->
+        <header class="text-center py-4 md:py-8">
+          <div class="animate-fade-in-down">
+            <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-2 md:mb-4">
+              <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle">
+              <div>
+                <h1 class="text-3xl md:text-5xl lg:text-7xl font-game text-white font-bold">
+                  Flower Farm Frenzy
+                </h1>
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 md:px-4 md:py-2 rounded-xl font-bold text-sm md:text-lg lg:text-xl mb-2 inline-block">
+                  🎉 Celebrating 25 Years! 🎉
+                </div>
+              </div>
+              <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle" style="animation-delay: 0.5s">
+            </div>
+          </div>
+        </header>
+
+        <!-- Game Section - Centered -->
+        <main class="flex-1 flex items-center justify-center px-2 md:px-4 py-4 md:py-8">
+          <div class="w-full max-w-4xl mx-auto">
+            <div class="animate-scale-in">
+              <GameCanvas 
+                @game-end="handleGameEnd"
+                @show-leaderboard="showLeaderboard"
+              />
+            </div>
+          </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <footer class="text-center py-4 md:py-8">
+          <div class="animate-fade-in-up">
+            <button 
+              @click="showLeaderboard"
+              class="btn-secondary text-lg md:text-xl px-6 py-3 md:px-8 md:py-4"
+            >
+              <span class="mr-2 md:mr-3">🏆</span>
+              View Leaderboard
+            </button>
+          </div>
+        </footer>
       </div>
 
       <!-- Leaderboard View -->
-      <div v-else-if="currentView === 'leaderboard'" class="leaderboard-view">
-        <Leaderboard 
-          ref="leaderboardRef"
-          @play-game="showGame"
-        />
-      </div>
-    </main>
+      <div v-else-if="currentView === 'leaderboard'" class="min-h-screen flex flex-col animate-fade-in">
+        <!-- Leaderboard Header -->
+        <header class="text-center py-4 md:py-8">
+          <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-2 md:mb-4 animate-fade-in-down">
+            <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle">
+            <div>
+              <h1 class="text-3xl md:text-5xl lg:text-7xl font-game text-white font-bold">
+                Leaderboard
+              </h1>
+              <p class="text-white/80 text-lg md:text-xl lg:text-2xl font-display mt-2">
+                Top Flower Farm Champions
+              </p>
+            </div>
+            <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle" style="animation-delay: 0.5s">
+          </div>
+        </header>
 
-    <!-- Footer -->
-    <footer class="bg-black bg-opacity-30 text-white py-6 px-6 mt-12">
-      <div class="max-w-6xl mx-auto text-center">
-        <p class="text-lg mb-2">🌻 Flower Farm Frenzy 🌻</p>
-        <p class="text-sm opacity-70">
-          Click flowers, avoid weeds, beat the clock! Made with Vue 3 + Phaser.js
-        </p>
-        <div class="mt-4 space-x-4">
-          <span class="text-xs opacity-50">Backend: Django + PostgreSQL</span>
-          <span class="text-xs opacity-50">Frontend: Vue 3 + TypeScript + Tailwind</span>
+        <!-- Leaderboard Content -->
+        <main class="flex-1 px-2 md:px-4">
+          <Leaderboard 
+            ref="leaderboardRef"
+            @play-game="showGame"
+          />
+        </main>
+
+        <!-- Back to Game Button -->
+        <footer class="text-center py-4 md:py-8">
+          <div class="animate-fade-in-up">
+            <button 
+              @click="showGame"
+              class="btn-primary text-lg md:text-xl px-6 py-3 md:px-8 md:py-4"
+            >
+              <span class="mr-2 md:mr-3">🎮</span>
+              Back to Game
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Enhanced Connection Status -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0 transform translate-y-2"
+      enter-to-class="opacity-100 transform translate-y-0"
+      leave-active-class="transition-all duration-300 ease-in"
+      leave-from-class="opacity-100 transform translate-y-0"
+      leave-to-class="opacity-0 transform translate-y-2"
+    >
+      <div 
+        v-if="showConnectionStatus" 
+        :class="[
+          'fixed bottom-4 right-4 md:bottom-6 md:right-6 px-3 py-2 md:px-4 md:py-3 rounded-xl text-white text-xs md:text-sm font-medium shadow-large backdrop-blur-sm border border-white/20 z-50',
+          connectionStatus === 'online' ? 'status-online' : 'status-offline'
+        ]"
+      >
+        <div class="flex items-center space-x-2">
+          <div :class="[
+            'w-2 h-2 rounded-full',
+            connectionStatus === 'online' ? 'bg-green-300 animate-pulse' : 'bg-red-300'
+          ]"></div>
+          <span>{{ connectionStatus === 'online' ? 'Connected' : 'Offline' }}</span>
         </div>
       </div>
-    </footer>
-
-    <!-- Connection Status -->
-    <div 
-      v-if="showConnectionStatus" 
-      :class="[
-        'fixed bottom-4 right-4 px-4 py-2 rounded-lg text-white text-sm',
-        connectionStatus === 'online' ? 'bg-green-600' : 'bg-red-600'
-      ]"
-    >
-      {{ connectionStatus === 'online' ? '🟢 Connected' : '🔴 Offline' }}
-    </div>
+    </Transition>
   </div>
 </template>
 
-<style>
-/* Global styles that complement Tailwind */
-body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+<style scoped>
+/* Component-specific styles */
 #app {
-  font-family: 'Courier New', monospace;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Enhanced animations */
+.animate-fade-in-left {
+  animation: fadeInLeft 0.8s ease-out;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(34, 139, 34, 0.1);
+.animate-fade-in-right {
+  animation: fadeInRight 0.8s ease-out;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 105, 180, 0.7);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 105, 180, 1);
-}
-
-/* Smooth transitions */
-* {
-  transition: color 0.2s ease, background-color 0.2s ease;
-}
-
-/* Focus styles for accessibility */
-button:focus,
-input:focus {
-  outline: 2px solid #FF69B4;
-  outline-offset: 2px;
-}
-
-/* Loading animation */
-@keyframes spin {
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Smooth page transitions */
+.game-view, .leaderboard-view {
+  animation: pageSlideIn 0.5s ease-out;
+}
+
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading state improvements */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem !important;
+  }
+  
+  .text-6xl {
+    font-size: 2rem !important;
+  }
+  
+  /* Reduce padding for mobile */
+  .py-8 {
+    @apply py-4;
+  }
+  
+  .px-4 {
+    @apply px-2;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  .text-6xl {
+    font-size: 1.75rem !important;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    @apply text-base px-4 py-2;
+  }
+  
+  /* Make celebration banner smaller on mobile */
+  .bg-gradient-to-r {
+    @apply text-xs px-2 py-1;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (pointer: coarse) {
+  .btn-primary,
+  .btn-secondary {
+    @apply min-h-[48px]; /* Ensure minimum touch target size */
+  }
 }
 </style>
+
