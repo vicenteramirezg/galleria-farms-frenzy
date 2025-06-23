@@ -3,15 +3,16 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy frontend package files
-COPY frontend/package*.json ./
+COPY frontend/package*.json ./frontend/
 
 # Install dependencies
+WORKDIR /app/frontend
 RUN npm ci
 
-# Copy the entire project
-COPY . .
+# Copy the entire project (needed for potential cross-references)
+COPY . /app/
 
-# Set working directory to frontend
+# Ensure we're in the frontend directory
 WORKDIR /app/frontend
 
 # Build the application
