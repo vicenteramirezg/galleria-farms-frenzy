@@ -189,20 +189,44 @@ REST_FRAMEWORK = {
 if config('RAILWAY_ENVIRONMENT', default=None):
     # Production CORS settings
     railway_public_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+    
     cors_origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
+    
+    # Add the Railway public domain (frontend domain)
     if railway_public_domain:
         cors_origins.extend([
             f"https://{railway_public_domain}",
             f"http://{railway_public_domain}",
         ])
-    CORS_ALLOWED_ORIGINS = cors_origins
+    
+    # Add explicit domains from ALLOWED_HOSTS environment variable as fallback
+    additional_hosts = config('ALLOWED_HOSTS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
+    for host in additional_hosts:
+        if host and host not in ['localhost', '127.0.0.1']:
+            cors_origins.extend([
+                f"https://{host}",
+                f"http://{host}",
+            ])
+    
+    # Add explicit known domains as fallback (temporary debugging)
+    known_frontend_domains = [
+        "https://frontend-production-5974.up.railway.app",
+        "http://frontend-production-5974.up.railway.app",
+    ]
+    cors_origins.extend(known_frontend_domains)
+    
+    # Remove duplicates
+    CORS_ALLOWED_ORIGINS = list(set(cors_origins))
     
     # Debug logging for CORS
+    print(f"Railway Public Domain: {railway_public_domain}")
+    print(f"Additional Hosts: {additional_hosts}")
+    print(f"Known Frontend Domains Added: {known_frontend_domains}")
     print(f"Production CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
 else:
     # Local development CORS settings
@@ -214,6 +238,29 @@ else:
     ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Additional CORS settings for production
+if config('RAILWAY_ENVIRONMENT', default=None):
+    CORS_ALLOW_ALL_ORIGINS = False  # Explicitly set to False for security
+    CORS_ALLOWED_HEADERS = [
+        'accept',
+        'accept-encoding',
+        'authorization',
+        'content-type',
+        'dnt',
+        'origin',
+        'user-agent',
+        'x-csrftoken',
+        'x-requested-with',
+    ]
+    CORS_ALLOW_METHODS = [
+        'DELETE',
+        'GET',
+        'OPTIONS',
+        'PATCH',
+        'POST',
+        'PUT',
+    ]
 
 # Production-specific settings
 if config('RAILWAY_ENVIRONMENT', default=None):
