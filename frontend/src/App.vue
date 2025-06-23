@@ -10,16 +10,21 @@ const connectionStatus = ref<'online' | 'offline'>('offline')
 const showConnectionStatus = ref(false)
 const leaderboardRef = ref<InstanceType<typeof Leaderboard>>()
 const isLoaded = ref(false)
+const isInitialLoading = ref(true)
 
 onMounted(() => {
+  // Show loading screen for at least 2 seconds
+  setTimeout(() => {
+    isInitialLoading.value = false
+    // Add a small delay for smooth entrance animation after loading
+    setTimeout(() => {
+      isLoaded.value = true
+    }, 100)
+  }, 2000)
+  
   checkConnection()
   // Check connection every 30 seconds
   setInterval(checkConnection, 30000)
-  
-  // Add a small delay for smooth entrance animation
-  setTimeout(() => {
-    isLoaded.value = true
-  }, 100)
 })
 
 const checkConnection = async () => {
@@ -60,7 +65,25 @@ const showGame = () => {
 </script>
 
 <template>
-  <div id="app" class="min-h-screen w-full" style="background: #211f20;">
+  <!-- Loading Screen -->
+  <div 
+    v-if="isInitialLoading" 
+    class="fixed inset-0 bg-white flex items-center justify-center z-50"
+  >
+    <div class="text-center animate-pulse">
+      <img 
+        src="/25th-logo_Black.png" 
+        alt="Galleria Farms 25th Anniversary" 
+        class="h-32 md:h-48 mx-auto animate-bounce-subtle"
+      >
+      <div class="mt-8">
+        <div class="w-12 h-12 border-4 border-gray-300 border-t-4 border-t-gray-800 rounded-full animate-spin mx-auto"></div>
+        <p class="text-gray-600 mt-4 text-lg font-medium">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <div v-else id="app" class="min-h-screen w-full" style="background: #211f20;">
     <!-- Animated background elements -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-10 left-10 text-4xl animate-float opacity-20">🌸</div>
@@ -79,17 +102,19 @@ const showGame = () => {
         <!-- Header with Title -->
         <header class="text-center py-4 md:py-8">
           <div class="animate-fade-in-down">
-            <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-2 md:mb-4">
-              <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle">
+            <div class="flex flex-col items-center space-y-4 mb-2 md:mb-4">
+              <!-- 25th Anniversary Logo above title -->
+              <img src="/25th-logo_White.png" alt="25th Anniversary Logo" class="h-32 md:h-48 lg:h-64 animate-bounce-subtle">
+              
+              <!-- Title and celebration banner -->
               <div>
                 <h1 class="text-3xl md:text-5xl lg:text-7xl font-game text-white font-bold">
                   Flower Farm Frenzy
                 </h1>
-                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 md:px-4 md:py-2 rounded-xl font-bold text-sm md:text-lg lg:text-xl mb-2 inline-block">
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 md:px-4 md:py-2 rounded-xl font-bold text-sm md:text-lg lg:text-xl mb-4 inline-block mt-2">
                   🎉 Celebrating 25 Years! 🎉
                 </div>
               </div>
-              <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle" style="animation-delay: 0.5s">
             </div>
           </div>
         </header>
@@ -124,17 +149,21 @@ const showGame = () => {
       <div v-else-if="currentView === 'leaderboard'" class="min-h-screen flex flex-col animate-fade-in">
         <!-- Leaderboard Header -->
         <header class="text-center py-4 md:py-8">
-          <div class="flex justify-center items-center space-x-2 md:space-x-4 mb-2 md:mb-4 animate-fade-in-down">
-            <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle">
-            <div>
-              <h1 class="text-3xl md:text-5xl lg:text-7xl font-game text-white font-bold">
-                Leaderboard
-              </h1>
-              <p class="text-white/80 text-lg md:text-xl lg:text-2xl font-display mt-2">
-                Top Flower Farm Champions
-              </p>
+          <div class="animate-fade-in-down">
+            <div class="flex flex-col items-center space-y-4 mb-2 md:mb-4">
+              <!-- 25th Anniversary Logo above title -->
+              <img src="/25th-logo_White.png" alt="25th Anniversary Logo" class="h-16 md:h-24 animate-bounce-subtle">
+              
+              <!-- Title and subtitle -->
+              <div>
+                <h1 class="text-3xl md:text-5xl lg:text-7xl font-game text-white font-bold">
+                  Leaderboard
+                </h1>
+                <p class="text-white/80 text-lg md:text-xl lg:text-2xl font-display mt-2">
+                  Top Flower Farm Champions
+                </p>
+              </div>
             </div>
-            <img src="/logo_white.png" alt="Logo" class="h-10 md:h-16 animate-bounce-subtle" style="animation-delay: 0.5s">
           </div>
         </header>
 
@@ -309,6 +338,23 @@ const showGame = () => {
   .btn-primary,
   .btn-secondary {
     @apply min-h-[48px]; /* Ensure minimum touch target size */
+  }
+}
+
+/* Loading screen animations */
+.animate-bounce-subtle {
+  animation: bounceSubtle 2s ease-in-out infinite;
+}
+
+@keyframes bounceSubtle {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
   }
 }
 </style>
