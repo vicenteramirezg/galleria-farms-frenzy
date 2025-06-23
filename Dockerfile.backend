@@ -1,0 +1,22 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Copy backend requirements and install dependencies
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project (needed for potential cross-references)
+COPY . .
+
+# Set working directory to backend
+WORKDIR /app/backend
+
+# Collect static files and run migrations
+RUN python manage.py collectstatic --noinput || echo "Static files collection failed, continuing..."
+
+# Expose port
+EXPOSE 8000
+
+# Start the application
+CMD sh -c "gunicorn flower_farm_api.wsgi:application --bind 0.0.0.0:$PORT" 

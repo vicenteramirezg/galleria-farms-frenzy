@@ -3,11 +3,12 @@
 ## 📁 Files Created for Deployment
 
 ✅ **Configuration Files:**
-- `railway.json` - Railway project configuration
-- `nixpacks.toml` - Backend build configuration (root level)
-- `nixpacks-frontend.toml` - Frontend build configuration
-- `backend/nixpacks.toml` - Backend build configuration (in folder)
-- `frontend/nixpacks.toml` - Frontend build configuration (in folder)
+- `railway.json` - Backend Railway configuration
+- `railway-frontend.json` - Frontend Railway configuration  
+- `Dockerfile.backend` - Backend Docker build configuration
+- `Dockerfile.frontend` - Frontend Docker build configuration
+- `nixpacks.toml` - Backend Nixpacks config (backup)
+- `nixpacks-frontend.toml` - Frontend Nixpacks config (backup)
 
 ✅ **Documentation:**
 - `RAILWAY_DEPLOYMENT_GUIDE.md` - Complete deployment guide
@@ -39,9 +40,9 @@ SECRET_KEY=#pw$Ns7%Yy^54qeWqm5yExk&!Eagwuwa31^_9mFb)CWAZ_za6A
    - Select your repository
 
 3. **Add Additional Services:**
-   - **Backend:** Auto-created (uses root `nixpacks.toml`)
+   - **Backend:** Auto-created (uses `Dockerfile.backend`)
    - **Database:** + New Service → Database → PostgreSQL
-   - **Frontend:** + New Service → GitHub Repo → Set Nixpacks Config: `nixpacks-frontend.toml`
+   - **Frontend:** + New Service → GitHub Repo → Set Dockerfile: `Dockerfile.frontend`
 
 4. **Configure Environment Variables:**
    

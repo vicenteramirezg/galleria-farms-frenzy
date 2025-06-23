@@ -40,7 +40,7 @@ galleria-farms-frenzy/
 
 1. **First Service Created**: Railway will create your first service automatically
    - This will be your **Backend Service** (Django API)
-   - Railway will use the root `nixpacks.toml` (configured for backend)
+   - Railway will use the `Dockerfile.backend` and `railway.json` configuration
 
 ### Step 4: Add Database Service
 
@@ -80,7 +80,8 @@ galleria-farms-frenzy/
    - Choose your repository (same repo as backend)
    - **IMPORTANT**: In the service settings, you need to:
      - Go to Settings → Build
-     - Set **Nixpacks Config File**: `nixpacks-frontend.toml`
+     - Set **Builder**: Docker
+     - Set **Dockerfile Path**: `Dockerfile.frontend`
 
 2. **Configure Environment Variables**:
    Navigate to your frontend service → Variables tab and add:

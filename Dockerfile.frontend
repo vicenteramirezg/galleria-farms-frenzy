@@ -1,0 +1,27 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy the entire project
+COPY . .
+
+# Set working directory to frontend
+WORKDIR /app/frontend
+
+# Build the application
+RUN npm run build
+
+# Install serve globally
+RUN npm install -g serve
+
+# Expose port
+EXPOSE 3000
+
+# Start the application
+CMD sh -c "serve -s dist -l $PORT" 
