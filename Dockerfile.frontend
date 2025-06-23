@@ -14,11 +14,15 @@ COPY . .
 # Set working directory to frontend
 WORKDIR /app/frontend
 
+# Accept build-time environment variables
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build the application
 RUN npm run build-only
 
 # Expose port
 EXPOSE 3000
 
-# Start the application using npx serve (no global install needed)
-CMD sh -c "npx serve -s dist -p $PORT" 
+# Start the application with runtime config injection
+CMD sh -c "if [ ! -z \"$VITE_API_URL\" ]; then echo \"window.APP_CONFIG = { API_URL: '$VITE_API_URL' };\" > dist/config.js; fi && npx serve -s dist -p $PORT" 

@@ -28,15 +28,31 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Configure ALLOWED_HOSTS for different environments
 if config('RAILWAY_ENVIRONMENT', default=None):
-    # Production: Allow Railway domain and any configured hosts
-    railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+    # Production: Allow Railway domains and any configured hosts
+    railway_public_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+    railway_private_domain = config('RAILWAY_PRIVATE_DOMAIN', default='')
+    
     allowed_hosts = ['localhost', '127.0.0.1']
-    if railway_domain:
-        allowed_hosts.append(railway_domain)
-    # Add any additional hosts from environment
+    
+    # Add frontend domain (for CORS origin)
+    if railway_public_domain:
+        allowed_hosts.append(railway_public_domain)
+    
+    # Add backend domain (this service's domain) - Railway automatically sets this
+    if railway_private_domain:
+        allowed_hosts.append(railway_private_domain)
+    
+    # Add any additional hosts from environment (including the backend domain explicitly)
     additional_hosts = config('ALLOWED_HOSTS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
     allowed_hosts.extend(additional_hosts)
+    
     ALLOWED_HOSTS = allowed_hosts
+    
+    # Debug logging for production
+    print(f"Production ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+    print(f"Railway Public Domain: {railway_public_domain}")
+    print(f"Railway Private Domain: {railway_private_domain}")
+    print(f"Additional Hosts from env: {additional_hosts}")
 else:
     # Local development
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
@@ -172,19 +188,22 @@ REST_FRAMEWORK = {
 # CORS settings
 if config('RAILWAY_ENVIRONMENT', default=None):
     # Production CORS settings
-    railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+    railway_public_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
     cors_origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
-    if railway_domain:
+    if railway_public_domain:
         cors_origins.extend([
-            f"https://{railway_domain}",
-            f"http://{railway_domain}",
+            f"https://{railway_public_domain}",
+            f"http://{railway_public_domain}",
         ])
     CORS_ALLOWED_ORIGINS = cors_origins
+    
+    # Debug logging for CORS
+    print(f"Production CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
 else:
     # Local development CORS settings
     CORS_ALLOWED_ORIGINS = [

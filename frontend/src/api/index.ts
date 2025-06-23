@@ -1,7 +1,19 @@
 import axios, { type AxiosResponse } from 'axios'
 
-// API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+// API Configuration - Check runtime config first, then build-time env, then fallback
+const getRuntimeConfig = () => {
+  // @ts-ignore - window.APP_CONFIG is loaded from public/config.js
+  return window.APP_CONFIG?.API_URL || null
+}
+
+const API_BASE_URL = getRuntimeConfig() || import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+
+// Debug logging
+console.log('API Configuration:', {
+  runtimeConfig: getRuntimeConfig(),
+  buildTimeEnv: import.meta.env.VITE_API_URL,
+  finalApiUrl: API_BASE_URL
+})
 
 // Create axios instance
 const api = axios.create({
