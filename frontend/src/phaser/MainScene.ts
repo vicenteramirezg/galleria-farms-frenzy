@@ -26,7 +26,7 @@ export const DIFFICULTY_PRESETS: Record<string, DifficultySettings> = {
     itemLifetimeMin: 3000,
     itemLifetimeMax: 4500,
     caterpillarRatio: 0.25, // 25% caterpillars
-    gameTime: 60
+    gameTime: 30
   },
   normal: {
     spawnDelayMin: 500,
@@ -34,7 +34,7 @@ export const DIFFICULTY_PRESETS: Record<string, DifficultySettings> = {
     itemLifetimeMin: 1500,
     itemLifetimeMax: 2500,
     caterpillarRatio: 0.35, // 35% caterpillars
-    gameTime: 60
+    gameTime: 30
   },
   hard: {
     spawnDelayMin: 300,
@@ -42,13 +42,13 @@ export const DIFFICULTY_PRESETS: Record<string, DifficultySettings> = {
     itemLifetimeMin: 1000,
     itemLifetimeMax: 1800,
     caterpillarRatio: 0.45, // 45% caterpillars
-    gameTime: 60
+    gameTime: 30
   }
 }
 
 export class MainScene extends Phaser.Scene {
   private score = 0
-  private timeLeft = 60
+  private timeLeft = 30
   private gameActive = false
   private grid: (GameItem | null)[][] = []
   private gridSize = { rows: 6, cols: 8 }

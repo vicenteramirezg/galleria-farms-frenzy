@@ -26,7 +26,20 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+# Configure ALLOWED_HOSTS for different environments
+if config('RAILWAY_ENVIRONMENT', default=None):
+    # Production: Allow Railway domain and any configured hosts
+    railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+    allowed_hosts = ['localhost', '127.0.0.1']
+    if railway_domain:
+        allowed_hosts.append(railway_domain)
+    # Add any additional hosts from environment
+    additional_hosts = config('ALLOWED_HOSTS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
+    allowed_hosts.extend(additional_hosts)
+    ALLOWED_HOSTS = allowed_hosts
+else:
+    # Local development
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
 
 # Application definition
@@ -79,16 +92,27 @@ WSGI_APPLICATION = 'flower_farm_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': config('DB_NAME', default=BASE_DIR / 'db.sqlite3'),
-        'USER': config('DB_USER', default=''),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default=''),
-        'PORT': config('DB_PORT', default=''),
+# Check if we're in production (Railway sets RAILWAY_ENVIRONMENT)
+if config('RAILWAY_ENVIRONMENT', default=None):
+    # Production database configuration (PostgreSQL on Railway)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('PGDATABASE'),
+            'USER': config('PGUSER'),
+            'PASSWORD': config('PGPASSWORD'),
+            'HOST': config('PGHOST'),
+            'PORT': config('PGPORT', cast=int),
+        }
     }
-}
+else:
+    # Local development database configuration (SQLite3)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -146,13 +170,47 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+if config('RAILWAY_ENVIRONMENT', default=None):
+    # Production CORS settings
+    railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+    cors_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+    if railway_domain:
+        cors_origins.extend([
+            f"https://{railway_domain}",
+            f"http://{railway_domain}",
+        ])
+    CORS_ALLOWED_ORIGINS = cors_origins
+else:
+    # Local development CORS settings
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Production-specific settings
+if config('RAILWAY_ENVIRONMENT', default=None):
+    # Force HTTPS in production
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Security settings for production
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # Disable debug in production (override any env setting)
+    DEBUG = False
 
 
